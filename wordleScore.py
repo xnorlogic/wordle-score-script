@@ -38,7 +38,7 @@ def GetTweetsFromUser(TwiteerUserName):
     with open(TwiteerUserName + '.json', 'w') as json_file:
       json.dump(json_response, json_file, indent=4, sort_keys=True)
 	
-	#create a dictionary from the JSON file
+    #create a dictionary from the JSON file
     with open(TwiteerUserName + '.json') as f:
         ThoseTweets = json.load(f)
 	
@@ -53,15 +53,13 @@ def GetTweetsFromUser(TwiteerUserName):
 def LoopThroughPlayers(Players):
     for Player in Players:
       print(Player + ' Latest Tweets------------------------')
-	  
-	  #START
-	  #Obtain the latest tweets of the user
+      #START
+      #Obtain the latest tweets of the user
       Tweets = GetTweetsFromUser(Player)
-	  #Filter tweets with the wordle identifier
-	  #Parse wordle DATA: Wordle# Score
-	  #Add the DATA to the DB
-	  #END
-	  
+      #Filter tweets with the wordle identifier
+      #Parse wordle DATA: Wordle# Score
+      #Add the DATA to the DB
+      #END 
       print(Tweets['text'])
 
 def main():
