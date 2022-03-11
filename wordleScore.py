@@ -47,8 +47,16 @@ def GetTweetsFromUser(TwiteerUserName):
        TweetsFromUser_DataFrame = pd.json_normalize(ThoseTweets, record_path = ['data'])
     else:
        TweetsFromUser_DataFrame = pd.DataFrame({'text' : ['BLANK']})
-	
     return TweetsFromUser_DataFrame
+
+def FilterTweetsFromUser(TweetsFromUser_DataFrame):
+    print(TweetsFromUser_DataFrame.index)
+    ThisRow=0
+    for row in TweetsFromUser_DataFrame.itertuples():
+      TweetText = TweetsFromUser_DataFrame['text'][ThisRow]
+      print(TweetText)
+      ThisRow = ThisRow + 1
+    return 12
 
 def LoopThroughPlayers(Players):
     for Player in Players:
@@ -57,13 +65,15 @@ def LoopThroughPlayers(Players):
       #Obtain the latest tweets of the user
       Tweets = GetTweetsFromUser(Player)
       #Filter tweets with the wordle identifier
+      FilteredTweets = FilterTweetsFromUser(Tweets)
       #Parse wordle DATA: Wordle# Score
       #Add the DATA to the DB
       #END 
-      print(Tweets['text'])
+      #print(Tweets['text'])
 
 def main():
-    Players = ['andresrbollain','Davidendum','monstrua_rosa','dondestalvizo','Mikeperezc'];
+    #Players = ['andresrbollain','Davidendum','monstrua_rosa','dondestalvizo','Mikeperezc']
+    Players = ['andresrbollain']
     LoopThroughPlayers(Players)
 	
 if __name__ == "__main__":
