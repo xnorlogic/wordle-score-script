@@ -55,6 +55,23 @@ def GetTweetsFromUser(TwiteerUserName):
        TweetsFromUser_DataFrame = pd.DataFrame({'text' : ['BLANK']})
     return TweetsFromUser_DataFrame
 
+def ExtractWordleDataFromTweet(TweetText):
+    WrodleData = [0,0]
+    #handle the score parse from the tweet
+    WordleNumber = TweetText.split('Wordle ')[1]
+    WordleNumber = WordleNumber.split(' ')[0]
+    WordleNumber = int(WordleNumber)
+    WordleScore = TweetText.split('Wordle ')[1]
+    WordleScore = WordleScore.split('/')[0]
+    WordleScore = WordleScore.split(' ')[1]
+    #handle the conversion to integer and if the game was failed
+    if(WordleScore == 'X'):
+      WordleScore = 7
+    else:
+      WordleScore = int(WordleScore)
+    WrodleData = [WordleNumber,WordleScore]
+    return WrodleData
+
 def ParseWordleDataFromUser(User,TweetsFromUser_DataFrame):
     ThisRow=0
     WordleScoresCount=0
@@ -64,46 +81,38 @@ def ParseWordleDataFromUser(User,TweetsFromUser_DataFrame):
       TweetText = TweetsFromUser_DataFrame['text'][ThisRow]
       #handle the Wordle score search in the tweets
       if(TweetText.find('Wordle') != -1):
-        #Wordle score count fromthe tweets
+        #Wordle score count from the tweets
         WordleScoresCount = WordleScoresCount + 1
-        #handle the score parse from the tweet
-        WordleNumber = TweetText.split('Wordle ')[1]
-        WordleNumber = WordleNumber.split(' ')[0]
-        WordleNumber = int(WordleNumber)
-        WordleScore = TweetText.split('Wordle ')[1]
-        WordleScore = WordleScore.split('/')[0]
-        WordleScore = WordleScore.split(' ')[1]
-        #handle the conversion to integer and if the game was failed
-        if(WordleScore == 'X'):
-          WordleScore = 7
-        else:
-          WordleScore = int(WordleScore)
-        WordleDataFrame.loc[len(WordleDataFrame.index)] = [User,WordleNumber,WordleScore]
+        #Extract Wordle Data from the Tweet text
+        WrodleData = ExtractWordleDataFromTweet(TweetText)
+        #Add the Wordle data to the Data Frame
+        WordleDataFrame.loc[len(WordleDataFrame.index)] = [User,WrodleData[0],WrodleData[1]]
       ThisRow = ThisRow + 1
       
-    print(WordleDataFrame)
-
-    if (WordleScoresCount != 0):
-      print(WordleScoresCount , 'Wordle Scores found')
-    else:
+    if (WordleScoresCount == 0):
       WordleScoresCount = -1
 
     return WordleScoresCount
 
 def LoopThroughPlayers(Players):
     for Player in Players:
-      print(Player)
+      WordleScoresCount = 0
       #START
       #Obtain the latest tweets of the user
       Tweets = GetTweetsFromUser(Player)
       #Filter tweets with the wordle identifier and parse the wordle data
       WordleScoresCount = ParseWordleDataFromUser(Player,Tweets)
-      #Add the DATA to the DB
+      if(WordleScoresCount != -1):
+        #Add the DATA to the DB only if Wordle scores are found
+        print('For User: ',Player,' Script found ', WordleScoresCount,' Wrodle Scores, Its time to add them to the DB')
+      else:
+        #Dont Add anyhting to the DB
+        print('DB not modified')
       #END 
-      #print(Tweets['text'])
 
 def main():
     LoopThroughPlayers(Players)
+    print(WordleDataFrame)
 	
 if __name__ == "__main__":
     main()
