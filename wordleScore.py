@@ -202,9 +202,9 @@ def LoopThroughPlayers(Players):
 def main():
     #Obtain the players from the external file
     Players = GetPlayersFromList('twitterUsers')
-	  #Run through player data and add to the DB if needed
+    #Run through player data and add to the DB if needed
     PlayersWithDBupdates = LoopThroughPlayers(Players)
-	  #Print some Information
+    #Print some Information
     print('Number of players with DB Updates = ', PlayersWithDBupdates)
     print('Scores Extracted From Twitter...')
     print(WordleDataFrame)
