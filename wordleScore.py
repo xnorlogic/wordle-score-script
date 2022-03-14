@@ -11,9 +11,16 @@ bearer_token = os.environ.get("BEARER_TOKEN")
 #Global Data frame to hold the Wordle scores
 data = {'User': ['None'], 'WordleNumber': [0], 'Score': [0]}
 WordleDataFrame = pd.DataFrame(data=data)
-#Global Array of the players
-Players = ['andresrbollain', 'Davidendum',
-           'monstrua_rosa', 'dondestalvizo', 'Mikeperezc']
+
+
+def GetPlayersFromList(PlayerListFileName):		   
+    Players = []
+    Tmp = []
+    with open(PlayerListFileName) as f:
+      Tmp = f.readlines()
+    for Player in Tmp:
+      Players.append(Player.replace("\n", ""))
+    return Players
 
 
 def create_url(TwiteerUserName):
@@ -34,7 +41,7 @@ def bearer_oauth(r):
 
 def connect_to_endpoint(url):
     response = requests.request("GET", url, auth=bearer_oauth)
-    print(response.status_code)
+    #print(response.status_code)
     if response.status_code != 200:
         raise Exception(
             "Request returned an error: {} {}".format(
@@ -122,7 +129,7 @@ def Generate_SELECT_QueryString(username):
    return SELECT_QUERY
 
 
-def SearchDataFameDuplicates(WordleNumberDataFrame, WordleNumber):
+def SearchDataFrameDuplicates(WordleNumberDataFrame, WordleNumber):
    #seach the data frame for the wordle number
    WordleScoreFoundFlag = 1
    for i in range(len(WordleNumberDataFrame.User)):
@@ -152,7 +159,7 @@ def UpdateDataBase(WordleData):
           row[0], row[1]]
 
     #check if the wordle number was found in the data frame
-    if (SearchDataFameDuplicates(WordleNumberDataFrame, WordleData[1]) == 0):
+    if (SearchDataFrameDuplicates(WordleNumberDataFrame, WordleData[1]) == 0):
       #add a new data row to the DB
       conn.execute(Generate_INSERT_QueryString(WordleData))
       conn.commit()
@@ -191,8 +198,7 @@ def LoopThroughPlayers(Players):
       WordleScoresCount = ParseWordleDataFromUser(Player, Tweets)
       #Attempt to Add the DATA to the DB only if Wordle scores are found
       if(WordleScoresCount != -1):
-        print('For User: ', Player, ' Script found ', WordleScoresCount,
-              ' Wrodle Scores, Its time to check if they need to be added to the DB')
+        print('User: ', Player, ' has ', WordleScoresCount,' Wordle Scores in the past 7 days!')
         #Perform the DB operations, update the Data Base only when there is a NEW Wordle Score
         if(DataBaseUpdateQuery(WordleDataFrame, Player) == 1):
           PlayerStatusInDB = PlayerStatusInDB + 1
@@ -205,7 +211,12 @@ def LoopThroughPlayers(Players):
 
 
 def main():
-    print('Number of players with DB Updates = ', LoopThroughPlayers(Players))
+    #Obtain the players from the external file
+    Players = GetPlayersFromList('twitterUsers')
+	#Run through player data and add to the DB if needed
+    PlayersWithDBupdates = LoopThroughPlayers(Players)
+	#Print some Information
+    print('Number of players with DB Updates = ', PlayersWithDBupdates)
     print('Scores Extracted From Twitter...')
     print(WordleDataFrame)
 
