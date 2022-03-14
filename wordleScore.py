@@ -6,7 +6,9 @@ import os
 import json
 import pandas as pd
 
+
 bearer_token = os.environ.get("BEARER_TOKEN")
+
 
 #Global Data frame to hold the Wordle scores
 data = {'User': ['None'], 'WordleNumber': [0], 'Score': [0]}
@@ -55,15 +57,12 @@ def GetTweetsFromUser(TwiteerUserName):
     #create and make the API call
     url = create_url(TwiteerUserName)
     json_response = connect_to_endpoint(url)
-
     #create a JSON file from the response
     with open(TwiteerUserName + '.json', 'w') as json_file:
       json.dump(json_response, json_file, indent=4, sort_keys=True)
-
     #create a dictionary from the JSON file
     with open(TwiteerUserName + '.json') as f:
         ThoseTweets = json.load(f)
-
     #handle the no recent tweets from the user
     if(ThoseTweets['meta']['result_count'] != 0):
        TweetsFromUser_DataFrame = pd.json_normalize(
@@ -92,9 +91,7 @@ def ExtractWordleDataFromTweet(TweetText):
 
 
 def ParseWordleDataFromUser(User, TweetsFromUser_DataFrame):
-    ThisRow = 0
     WordleScoresCount = 0
-
     for DataFrameRow in TweetsFromUser_DataFrame.itertuples():
       #get the tweet text from the data frame
       TweetText = DataFrameRow.text
@@ -107,11 +104,8 @@ def ParseWordleDataFromUser(User, TweetsFromUser_DataFrame):
         #Add the Wordle data to the Data Frame
         WordleDataFrame.loc[len(WordleDataFrame.index)] = [
             User, WrodleData[0], WrodleData[1]]
-      ThisRow = ThisRow + 1
-
     if (WordleScoresCount == 0):
       WordleScoresCount = -1
-
     return WordleScoresCount
 
 
@@ -145,19 +139,15 @@ def UpdateDataBase(WordleData):
     #setup the DB connection
     conn = sqlite3.connect('wordleScores.db')
     DataBaseUpdatedFlag = 0
-
     #local scope data frame
     data = {'User': ['None'], 'WordleNumber': [0]}
     WordleNumberDataFrame = pd.DataFrame(data=data)
-
     #get the table contents for users from the DB
     cursor = conn.execute(Generate_SELECT_QueryString(WordleData[0]))
-
     #populate th data frame
     for row in cursor:
       WordleNumberDataFrame.loc[len(WordleNumberDataFrame.index)] = [
           row[0], row[1]]
-
     #check if the wordle number was found in the data frame
     if (SearchDataFrameDuplicates(WordleNumberDataFrame, WordleData[1]) == 0):
       #add a new data row to the DB
@@ -167,7 +157,6 @@ def UpdateDataBase(WordleData):
     else:
       #dont add to the DB because the wordle number already exists
       DataBaseUpdatedFlag = 0
-
     conn.close()
     return DataBaseUpdatedFlag
 
@@ -213,9 +202,9 @@ def LoopThroughPlayers(Players):
 def main():
     #Obtain the players from the external file
     Players = GetPlayersFromList('twitterUsers')
-	#Run through player data and add to the DB if needed
+	  #Run through player data and add to the DB if needed
     PlayersWithDBupdates = LoopThroughPlayers(Players)
-	#Print some Information
+	  #Print some Information
     print('Number of players with DB Updates = ', PlayersWithDBupdates)
     print('Scores Extracted From Twitter...')
     print(WordleDataFrame)
