@@ -95,9 +95,9 @@ def ParseWordleDataFromUser(User, TweetsFromUser_DataFrame):
     ThisRow = 0
     WordleScoresCount = 0
 
-    for row in TweetsFromUser_DataFrame.itertuples():
+    for DataFrameRow in TweetsFromUser_DataFrame.itertuples():
       #get the tweet text from the data frame
-      TweetText = TweetsFromUser_DataFrame['text'][ThisRow]
+      TweetText = DataFrameRow.text
       #handle the Wordle score search in the tweets
       if(TweetText.find('Wordle') != -1):
         #Wordle score count from the tweets
