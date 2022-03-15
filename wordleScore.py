@@ -5,6 +5,7 @@ import requests
 import os
 import json
 import pandas as pd
+from datetime import datetime
 
 
 bearer_token = os.environ.get("BEARER_TOKEN")
@@ -13,6 +14,13 @@ bearer_token = os.environ.get("BEARER_TOKEN")
 #Global Data frame to hold the Wordle scores
 data = {'User': ['None'], 'WordleNumber': [0], 'Score': [0]}
 WordleDataFrame = pd.DataFrame(data=data)
+
+
+def GetDateandTime():
+   now = datetime.now()
+   time = now.strftime("%H:%M:%S")
+   date = now.strftime("%d/%m/%Y")
+   return [date,time]
 
 
 def GetPlayersFromList(PlayerListFileName):		   
@@ -119,11 +127,12 @@ def ParseWordleDataFromUser(Player, TweetsFromUser_DataFrame):
 
 
 def Generate_INSERT_QueryString(WordleData):
-   username = WordleData[0]
-   wordlenumber = WordleData[1]
-   wordlescore = WordleData[2]
-   INSERT_QUERY = "INSERT INTO wordle_scores (username,wordlenumber,wordlescore) VALUES ('" + \
-       username + "'," + str(wordlenumber) + "," + str(wordlescore) + ");"
+   DateandTime = GetDateandTime()
+   ImportType = 'Script'
+   INSERT_QUERY = "INSERT INTO wordle_scores (username,wordlenumber,wordlescore,DBupdateDate,DBupdateTime,Importype) VALUES ('" + \
+       WordleData[0] + "'," + str(WordleData[1]) + "," + \
+       str(WordleData[2]) + "," + "'" + DateandTime[0] + "'" + "," + \
+       "'" + DateandTime[1] + "'" + "," + "'" + ImportType + "'" + ");"
    return INSERT_QUERY
 
 
