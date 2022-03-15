@@ -85,7 +85,7 @@ def ParseWordleScore(TweetText):
     return WordleScoreConditioning(WordleScore)
 
 
-def ParsetWordleNumber(TweetText):
+def ParseWordleNumber(TweetText):
     #handle the wordle number parse from the tweet
     WordleNumber = TweetText.split('Wordle ')[1]
     WordleNumber = WordleNumber.split(' ')[0]
@@ -94,8 +94,8 @@ def ParsetWordleNumber(TweetText):
     return WordleNumber
 
 
-def ParsetWordleDataFromTweet(TweetText):
-    WordleData = [ParsetWordleNumber(TweetText), ParseWordleScore(TweetText)]
+def ParseWordleDataFromTweet(TweetText):
+    WordleData = [ParseWordleNumber(TweetText), ParseWordleScore(TweetText)]
     #Todo: Maybe handle some checks on the data prior to return??
     return WordleData
 
@@ -114,7 +114,7 @@ def ParseWordleDataFromUser(Player, TweetsFromUser_DataFrame):
         #Wordle score count from the tweets
         WordleScoresCount = WordleScoresCount + 1
         #Extract Wordle Data from the Tweet text
-        WordleData = ParsetWordleDataFromTweet(TweetText)
+        WordleData = ParseWordleDataFromTweet(TweetText)
         #Add the Wordle data to the Data Frame
         WordleDataFrame.loc[len(WordleDataFrame.index)] = [
             Player, WordleData[WordleNumberIndex], WordleData[WordleScoreIndex]]
