@@ -1,6 +1,7 @@
 # wordle-score-script
 Gather Wordle Scores for specific users from Twitter. The users are stored in t the twitterUsers file, it should be enough to add the Twitter user name to the list in order to gather the data.
 Dependencies:
+  - Twitter API key
   - json
   - pandas
   - requests
