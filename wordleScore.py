@@ -72,26 +72,19 @@ def GetTweetsFromUser(TwiteerUserName):
     return TweetsFromUser_DataFrame
 
 
-def WordleScoreConditioning(WordleScore):
-    return 7 if WordleScore == 'X' else int(WordleScore)
-
-
 def ParseWordleScore(TweetText):
     #handle the wordle score parse from the tweet
     WordleScore = TweetText.split('Wordle ')[1]
     WordleScore = WordleScore.split('/')[0]
     WordleScore = WordleScore.split(' ')[1]
-    #Todo: Maybe handle some checks on the data prior to return??
-    return WordleScoreConditioning(WordleScore)
+    return 7 if WordleScore == 'X' else int(WordleScore)
 
 
 def ParseWordleNumber(TweetText):
     #handle the wordle number parse from the tweet
     WordleNumber = TweetText.split('Wordle ')[1]
     WordleNumber = WordleNumber.split(' ')[0]
-    WordleNumber = int(WordleNumber)
-    #Todo: Maybe handle some checks on the data prior to return??
-    return WordleNumber
+    return int(WordleNumber)
 
 
 def ParseWordleDataFromTweet(TweetText):
