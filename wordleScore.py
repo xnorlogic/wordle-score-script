@@ -73,17 +73,21 @@ def GetTweetsFromUser(TwiteerUserName):
 
 
 def ParseWordleScore(TweetText):
-    #handle the wordle score parse from the tweet
-    WordleScore = TweetText.split('Wordle ')[1]
-    WordleScore = WordleScore.split('/')[0]
-    WordleScore = WordleScore.split(' ')[1]
+    if (TweetText.count('Wordle ') == 1):
+      WordleScore = TweetText.split('Wordle ')[1]
+      WordleScore = WordleScore.split('/')[0]
+      WordleScore = WordleScore.split(' ')[1]
+    else:
+      WordleScore = 0
     return 7 if WordleScore == 'X' else int(WordleScore)
 
 
 def ParseWordleNumber(TweetText):
-    #handle the wordle number parse from the tweet
-    WordleNumber = TweetText.split('Wordle ')[1]
-    WordleNumber = WordleNumber.split(' ')[0]
+    if (TweetText.count('Wordle ') == 1):
+      WordleNumber = TweetText.split('Wordle ')[1]
+      WordleNumber = WordleNumber.split(' ')[0]
+    else:
+      WordleNumber = 0
     return int(WordleNumber)
 
 
