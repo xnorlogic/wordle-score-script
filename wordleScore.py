@@ -215,15 +215,33 @@ def LoopThroughPlayers(Players):
     return PlayerStatusInDB
 
 
+def LogInformation(TheLogFile,PlayersWithDBupdates):
+    #Print some info
+    print('Number of players with DB Updates = ', PlayersWithDBupdates)
+    print('Scores Extracted From Twitter...')
+    print(WordleDataFrame)
+    #Log the info
+    LogFile = open(TheLogFile, "a")
+    DateTime=GetDateandTime()
+    LogFile.write("\n")
+    LogFile.write('Log created: ' + DateTime[0] + ' --- ' + DateTime[1])
+    LogFile.write("\n")
+    LogFile.write('Number of players with DB Updates = ' + str(PlayersWithDBupdates))
+    LogFile.write("\n")
+    LogFile.write('Scores Extracted From Twitter...')
+    LogFile.write("\n")
+    LogFile.write(WordleDataFrame.to_string())
+    LogFile.close()
+    return 0
+
+
 def main():
     #Obtain the players from the external file
     Players = GetPlayersFromList('twitterUsers')
     #Run through player data and add to the DB if needed
     PlayersWithDBupdates = LoopThroughPlayers(Players)
-    #Print some Information
-    print('Number of players with DB Updates = ', PlayersWithDBupdates)
-    print('Scores Extracted From Twitter...')
-    print(WordleDataFrame)
+    #Log the information
+    LogInformation('log',PlayersWithDBupdates)
 
 
 if __name__ == "__main__":
