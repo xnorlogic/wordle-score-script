@@ -179,7 +179,7 @@ def UpdateDataBase(WordleData):
     return DataBaseUpdatedFlag
 
 
-def DataBaseUpdateQuery(WordleDataFrame, Player):
+def DataBaseUpdateQuery(Player):
     DataBaseUpdateFlag = False
     WordleData = ['user', 000, 0]
     for DataFrameRow in WordleDataFrame.itertuples():
@@ -205,7 +205,7 @@ def LoopThroughPlayers(Players):
       if(WordleScoresCount != -1):
         print('User: ', Player, ' has ', WordleScoresCount,' Wordle Scores in the past 7 days!')
         #Perform the DB operations, update the Data Base only when there is a NEW Wordle Score
-        if(DataBaseUpdateQuery(WordleDataFrame, Player) == True):
+        if(DataBaseUpdateQuery(Player) == True):
           PlayerStatusInDB = PlayerStatusInDB + 1
         else:
           PlayerStatusInDB = PlayerStatusInDB + 0
