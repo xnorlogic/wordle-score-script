@@ -202,33 +202,33 @@ def loop_players(players):
     return data_base_updates
 
 
-def log_information(TheLogFile,PlayersWithDBupdates):
+def log_information(logfile_name,players_db_updates):
     #Print some info
-    print('Number of players with DB Updates = ', PlayersWithDBupdates)
+    print('Number of players with DB Updates = ', players_db_updates)
     print('Scores Extracted From Twitter...')
     print(wordle_df)
     #Log the info
-    LogFile = open(TheLogFile, "a")
-    DateTime = get_date_time()
-    LogFile.write("\n")
-    LogFile.write('Log created: ' + DateTime[0] + ' --- ' + DateTime[1])
-    LogFile.write("\n")
-    LogFile.write('Number of players with DB Updates = ' + str(PlayersWithDBupdates))
-    LogFile.write("\n")
-    LogFile.write('Scores Extracted From Twitter...')
-    LogFile.write("\n")
-    LogFile.write(wordle_df.to_string())
-    LogFile.close()
+    log = open(logfile_name, "a")
+    date_and_time = get_date_time()
+    log.write("\n")
+    log.write('Log created: ' + date_and_time[0] + ' --- ' + date_and_time[1])
+    log.write("\n")
+    log.write('Number of players with DB Updates = ' + str(players_db_updates))
+    log.write("\n")
+    log.write('Scores Extracted From Twitter...')
+    log.write("\n")
+    log.write(wordle_df.to_string())
+    log.close()
     return 0
 
 
 def main():
     #Obtain the players from the external file
-    Players = get_players('twitterUsers')
+    players = get_players('twitterUsers')
     #Run through player data and add to the DB if needed
-    PlayersWithDBupdates = loop_players(Players)
+    players_db_updates = loop_players(players)
     #Log the information
-    log_information('log',PlayersWithDBupdates)
+    log_information('log',players_db_updates)
 
 
 if __name__ == "__main__":
