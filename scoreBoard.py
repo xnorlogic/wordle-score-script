@@ -1,13 +1,14 @@
 import sqlite3
 import pandas as pd
+import numpy as np
 from datetime import datetime
 
 
 InitialWN = 268
-WN=[InitialWN,InitialWN + 1,InitialWN + 2,InitialWN + 3,InitialWN + 4]
+WN=[InitialWN,InitialWN + 1,InitialWN + 2,InitialWN + 3,InitialWN + 4,InitialWN + 5,InitialWN + 6]
 
 #Global Data frame to hold the Wordle Scoreboard
-data = {'User': ['None'], str(WN[0]): [0],str(WN[1]): [0],str(WN[2]): [0],str(WN[3]): [0],str(WN[4]): [0], 'Total': [0]}
+data = {'User': ['None'], str(WN[0]): [0],str(WN[1]): [0],str(WN[2]): [0],str(WN[3]): [0],str(WN[4]): [0],str(WN[5]): [0],str(WN[6]): [0], 'Total': [0]}
 WordleScoreBoardDataFrame = pd.DataFrame(data=data)
 
 def GetDateandTime():
@@ -48,22 +49,22 @@ def GetPlayerData(Player):
 
 
 def GenerateScoreBoardDataFrame(Player):
-    WeekWordleScoreIndex = 0
-    WS=[7,7,7,7,7]
+    WS=[7,7,7,7,7,7,7]
     #Obtain the player information from the Data Base
     PlayerData = GetPlayerData(Player)
     PlayerData = PlayerData.sort_values(by='WordleNumber', ascending=True)
+
     #Get the wordle scores for the given period
-    for DataFrameRow in PlayerData.itertuples():
-      if (DataFrameRow.WordleNumber == WN[0] or DataFrameRow.WordleNumber == WN[1] or 
-          DataFrameRow.WordleNumber == WN[2] or DataFrameRow.WordleNumber == WN[3] or 
-          DataFrameRow.WordleNumber == WN[4]):
-        WS[WeekWordleScoreIndex] = DataFrameRow.WordleScore
-        WeekWordleScoreIndex = WeekWordleScoreIndex + 1
+    for i in range(7):
+      FiteredData = PlayerData['WordleScore'].where(PlayerData['WordleNumber'] == 268 + i)
+      FiteredData = FiteredData.sort_values(ascending=True)
+      if(np.isnan(FiteredData.iloc[0])):
+        WS[i] = 7
       else:
-        WS[WeekWordleScoreIndex] = 7
+        WS[i] = int(FiteredData.iloc[0])
+
     #Populate the global Data Frame
-    WordleScoreBoardDataFrame.loc[len(WordleScoreBoardDataFrame.index)] = [Player,WS[0],WS[1],WS[2],WS[3],WS[4],sum(WS)]
+    WordleScoreBoardDataFrame.loc[len(WordleScoreBoardDataFrame.index)] = [Player,WS[0],WS[1],WS[2],WS[3],WS[4],WS[5],WS[6],sum(WS)]
     return 0
 
 
