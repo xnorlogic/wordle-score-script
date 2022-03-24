@@ -13,7 +13,7 @@ bearer_token = os.environ.get("BEARER_TOKEN")
 
 #Global Data frame to hold the Wordle scores
 data = {'User': ['None'], 'WordleNumber': [0], 'Score': [0]}
-WordleDataFrame = pd.DataFrame(data=data)
+wordle_df = pd.DataFrame(data=data)
 
 
 def get_date_time():
@@ -23,20 +23,19 @@ def get_date_time():
    return [date,time]
 
 
-def get_players(PlayerListFileName):		   
-    Players = []
+def get_players(players_file_name):		   
+    players = []
     Tmp = []
-    with open(PlayerListFileName) as f:
+    with open(players_file_name) as f:
       Tmp = f.readlines()
-    for Player in Tmp:
-      Players.append(Player.replace("\n", ""))
-    return Players
+    for player in Tmp:
+      players.append(player.replace("\n", ""))
+    return players
 
 
-def create_url(TwiteerUserName):
-    Users = TwiteerUserName
+def create_url(twitter_id):
     url = "https://api.twitter.com/2/tweets/search/recent?query=from:{}".format(
-        Users)
+        twitter_id)
     return url
 
 
@@ -115,74 +114,74 @@ def parse_wordle_data(Player, TweetsFromUser_DataFrame):
         #Extract Wordle Data from the Tweet text
         WordleData = [parse_wordle_number(TweetText), parse_wordle_score(TweetText)]
         #Add the Wordle data to the Data Frame
-        WordleDataFrame.loc[len(WordleDataFrame.index)] = [
+        wordle_df.loc[len(wordle_df.index)] = [
             Player, WordleData[WordleNumberIndex], WordleData[WordleScoreIndex]]
     return WordleScoresCount if WordleScoresCount != 0 else -1
 
 
-def generate_insert_query(WordleData):
-   DateandTime = get_date_time()
-   ImportType = 'Script'
-   INSERT_QUERY = "INSERT INTO wordle_scores (username,wordlenumber,wordlescore,DBupdateDate,DBupdateTime,Importype) VALUES ('" + \
-       WordleData[0] + "'," + str(WordleData[1]) + "," + \
-       str(WordleData[2]) + "," + "'" + DateandTime[0] + "'" + "," + \
-       "'" + DateandTime[1] + "'" + "," + "'" + ImportType + "'" + ");"
-   return INSERT_QUERY
+def generate_insert_query(wordle_data):
+   date_and_time = get_date_time()
+   import_type = 'Script'
+   sqlite_insert_query = "INSERT INTO wordle_scores (username,wordlenumber,wordlescore,DBupdateDate,DBupdateTime,Importype) VALUES ('" + \
+       wordle_data[0] + "'," + str(wordle_data[1]) + "," + \
+       str(wordle_data[2]) + "," + "'" + date_and_time[0] + "'" + "," + \
+       "'" + date_and_time[1] + "'" + "," + "'" + import_type + "'" + ");"
+   return sqlite_insert_query
 
 
 def generate_select_query(username):
-   SELECT_QUERY = "SELECT username,wordlenumber FROM wordle_scores WHERE username = '" + username + "';"
-   return SELECT_QUERY
+   sqlite_select_query = "SELECT username,wordlenumber FROM wordle_scores WHERE username = '" + username + "';"
+   return sqlite_select_query
 
 
-def find_duplicates(WordleNumberDataFrame, WordleNumber):
-   #seach the data frame for the wordle number
-   WordleScoreFoundFlag = True
-   for DataFrameRow in WordleNumberDataFrame.itertuples():
-      if (DataFrameRow.WordleNumber == WordleNumber):
-        WordleScoreFoundFlag = True
+def find_duplicates(wordle_number_df, wordle_number):
+   #search the data frame for the wordle number
+   wordle_score_found_flg = True
+   for df_row in wordle_number_df.itertuples():
+      if (df_row.WordleNumber == wordle_number):
+        wordle_score_found_flg = True
         break
       else:
-        WordleScoreFoundFlag = False
-   return WordleScoreFoundFlag
+        wordle_score_found_flg = False
+   return wordle_score_found_flg
 
 
-def data_base_manipulation(WordleData):
+def data_base_manipulation(wordle_data):
     #setup the DB connection
     conn = sqlite3.connect('wordleScores.db')
-    DataBaseUpdatedFlag = False
+    db_update_flg = False
     #local scope data frame
     data = {'User': ['None'], 'WordleNumber': [0]}
-    WordleNumberDataFrame = pd.DataFrame(data=data)
+    wordle_number_df = pd.DataFrame(data=data)
     #get the table contents for users from the DB
-    cursor = conn.execute(generate_select_query(WordleData[0]))
+    cursor = conn.execute(generate_select_query(wordle_data[0]))
     #populate th data frame
     for row in cursor:
-      WordleNumberDataFrame.loc[len(WordleNumberDataFrame.index)] = [
+      wordle_number_df.loc[len(wordle_number_df.index)] = [
           row[0], row[1]]
     #check if the wordle number was found in the data frame
-    if (find_duplicates(WordleNumberDataFrame, WordleData[1]) == False):
+    if (find_duplicates(wordle_number_df, wordle_data[1]) == False):
       #add a new data row to the DB
-      conn.execute(generate_insert_query(WordleData))
+      conn.execute(generate_insert_query(wordle_data))
       conn.commit()
-      DataBaseUpdatedFlag = True
+      db_update_flg = True
     else:
       #dont add to the DB because the wordle number already exists
-      DataBaseUpdatedFlag = False
+      db_update_flg = False
     conn.close()
-    return DataBaseUpdatedFlag
+    return db_update_flg
 
 
-def data_base_update(Player):
-    data_base_updates = 0
-    for DataFrameRow in WordleDataFrame.itertuples():
-      if (DataFrameRow.User == Player):
-        WordleData = [Player, DataFrameRow.WordleNumber, DataFrameRow.Score]
-        if (data_base_manipulation(WordleData) == True):
-          data_base_updates += 1
+def data_base_update(player):
+    db_updates = 0
+    for df_row in wordle_df.itertuples():
+      if (df_row.User == player):
+        wordle_data = [df_row.User, df_row.WordleNumber, df_row.Score]
+        if (data_base_manipulation(wordle_data) == True):
+          db_updates += 1
         else:
-          data_base_updates += 0
-    return data_base_updates
+          db_updates += 0
+    return db_updates
 
 
 def loop_players(players):
@@ -207,7 +206,7 @@ def log_information(TheLogFile,PlayersWithDBupdates):
     #Print some info
     print('Number of players with DB Updates = ', PlayersWithDBupdates)
     print('Scores Extracted From Twitter...')
-    print(WordleDataFrame)
+    print(wordle_df)
     #Log the info
     LogFile = open(TheLogFile, "a")
     DateTime = get_date_time()
@@ -218,7 +217,7 @@ def log_information(TheLogFile,PlayersWithDBupdates):
     LogFile.write("\n")
     LogFile.write('Scores Extracted From Twitter...')
     LogFile.write("\n")
-    LogFile.write(WordleDataFrame.to_string())
+    LogFile.write(wordle_df.to_string())
     LogFile.close()
     return 0
 
