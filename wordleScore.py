@@ -14,6 +14,8 @@ bearer_token = os.environ.get("BEARER_TOKEN")
 #Global Data frame to hold the Wordle scores
 data = {'User': ['None'], 'WordleNumber': [0], 'Score': [0]}
 wordle_df = pd.DataFrame(data=data)
+#Global for database name
+wordle_scores_db = 'wordleScores.db'
 
 
 def get_date_time():
@@ -25,10 +27,10 @@ def get_date_time():
 
 def get_players(players_file_name):		   
     players = []
-    Tmp = []
+    tmp = []
     with open(players_file_name) as f:
-      Tmp = f.readlines()
-    for player in Tmp:
+      tmp = f.readlines()
+    for player in tmp:
       players.append(player.replace("\n", ""))
     return players
 
@@ -60,77 +62,75 @@ def connect_to_endpoint(url):
     return response.json()
 
 
-def get_tweets(TwiteerUserName):
+def get_tweets(twitter_id):
     #create and make the API call
-    url = create_url(TwiteerUserName)
+    url = create_url(twitter_id)
     json_response = connect_to_endpoint(url)
     #create a JSON file from the response
-    with open(TwiteerUserName + '.json', 'w') as json_file:
+    with open(twitter_id + '.json', 'w') as json_file:
       json.dump(json_response, json_file, indent=4, sort_keys=True)
     #create a dictionary from the JSON file
-    with open(TwiteerUserName + '.json') as f:
-        ThoseTweets = json.load(f)
+    with open(twitter_id + '.json') as f:
+        tweets = json.load(f)
     #handle the no recent tweets from the user
-    if(ThoseTweets['meta']['result_count'] != 0):
-       TweetsFromUser_DataFrame = pd.json_normalize(
-           ThoseTweets, record_path=['data'])
+    if(tweets['meta']['result_count'] != 0):
+       tweets_df = pd.json_normalize(
+           tweets, record_path=['data'])
     else:
-       TweetsFromUser_DataFrame = pd.DataFrame({'text': ['BLANK']})
-    return TweetsFromUser_DataFrame
+       tweets_df = pd.DataFrame({'text': ['BLANK']})
+    return tweets_df
 
 
-def parse_wordle_score(TweetText):
-    if (TweetText.count('Wordle ') == 1):
-      WordleScore = TweetText.split('Wordle ')[1]
-      WordleScore = WordleScore.split('/')[0]
-      WordleScore = WordleScore.split(' ')[1]
+def parse_wordle_score(tweet):
+    if (tweet.count('Wordle ') == 1):
+      wordle_score = tweet.split('Wordle ')[1]
+      wordle_score = wordle_score.split('/')[0]
+      wordle_score = wordle_score.split(' ')[1]
     else:
-      WordleScore = 0
-    return 7 if WordleScore == 'X' else int(WordleScore)
+      wordle_score = 0
+    return 7 if wordle_score == 'X' else int(wordle_score)
 
 
-def parse_wordle_number(TweetText):
-    if (TweetText.count('Wordle ') == 1):
-      WordleNumber = TweetText.split('Wordle ')[1]
-      WordleNumber = WordleNumber.split(' ')[0]
+def parse_wordle_number(tweet):
+    if (tweet.count('Wordle ') == 1):
+      wordle_number = tweet.split('Wordle ')[1]
+      wordle_number = wordle_number.split(' ')[0]
     else:
-      WordleNumber = 0
-    return int(WordleNumber)
+      wordle_number = 0
+    return int(wordle_number)
 
 
-def parse_wordle_data(Player, TweetsFromUser_DataFrame):
+def parse_wordle_data(player, tweets_df):
     #Locals
-    WordleScoresCount = 0
-    WordleNumberIndex = 0
-    WordleScoreIndex  = 1
+    wordle_scores_cnt = 0
     #Loop through the dataframe looking for twits that have Wordle identifier 
-    for DataFrameRow in TweetsFromUser_DataFrame.itertuples():
+    for df_row in tweets_df.itertuples():
       #get the tweet text from the data frame
-      TweetText = DataFrameRow.text
+      tweet = df_row.text
       #handle the Wordle score search in the tweets
-      if(TweetText.find('Wordle') != -1):
+      if(tweet.find('Wordle') != -1):
         #Wordle score count from the tweets
-        WordleScoresCount = WordleScoresCount + 1
+        wordle_scores_cnt = wordle_scores_cnt + 1
         #Extract Wordle Data from the Tweet text
-        WordleData = [parse_wordle_number(TweetText), parse_wordle_score(TweetText)]
+        wordle_data = [parse_wordle_number(tweet), parse_wordle_score(tweet)]
         #Add the Wordle data to the Data Frame
-        wordle_df.loc[len(wordle_df.index)] = [
-            Player, WordleData[WordleNumberIndex], WordleData[WordleScoreIndex]]
-    return WordleScoresCount if WordleScoresCount != 0 else -1
+        wordle_df.loc[len(wordle_df.index)] = [player, wordle_data[0], wordle_data[1]]
+    return wordle_scores_cnt if wordle_scores_cnt != 0 else -1
 
 
 def generate_insert_query(wordle_data):
    date_and_time = get_date_time()
    import_type = 'Script'
-   sqlite_insert_query = "INSERT INTO wordle_scores (username,wordlenumber,wordlescore,DBupdateDate,DBupdateTime,Importype) VALUES ('" + \
+   sqlite_insert_query = "INSERT INTO wordle_scores " + \
+       "(username,wordlenumber,wordlescore,DBupdateDate,DBupdateTime,Importype) VALUES ('" + \
        wordle_data[0] + "'," + str(wordle_data[1]) + "," + \
        str(wordle_data[2]) + "," + "'" + date_and_time[0] + "'" + "," + \
        "'" + date_and_time[1] + "'" + "," + "'" + import_type + "'" + ");"
    return sqlite_insert_query
 
 
-def generate_select_query(username):
-   sqlite_select_query = "SELECT username,wordlenumber FROM wordle_scores WHERE username = '" + username + "';"
+def generate_select_query(twitter_id):
+   sqlite_select_query = "SELECT username,wordlenumber FROM wordle_scores WHERE username = '" + twitter_id + "';"
    return sqlite_select_query
 
 
@@ -148,7 +148,7 @@ def find_duplicates(wordle_number_df, wordle_number):
 
 def data_base_manipulation(wordle_data):
     #setup the DB connection
-    conn = sqlite3.connect('wordleScores.db')
+    conn = sqlite3.connect(wordle_scores_db)
     db_update_flg = False
     #local scope data frame
     data = {'User': ['None'], 'WordleNumber': [0]}
