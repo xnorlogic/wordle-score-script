@@ -35,9 +35,9 @@ def get_players(players_file_name):
     return players
 
 
-def create_url(twitter_id):
+def create_url(twitter_id,number_of_results):
     url = "https://api.twitter.com/2/tweets/search/recent?query=from:{}".format(
-        twitter_id)
+        twitter_id) + "&max_results=" + str(number_of_results)
     return url
 
 
@@ -64,7 +64,7 @@ def connect_to_endpoint(url):
 
 def get_tweets(twitter_id):
     #create and make the API call
-    url = create_url(twitter_id)
+    url = create_url(twitter_id, 100)
     json_response = connect_to_endpoint(url)
     #create a JSON file from the response
     with open(twitter_id + '.json', 'w') as json_file:
