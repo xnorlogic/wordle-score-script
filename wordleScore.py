@@ -4,6 +4,7 @@ import sqlite3
 import requests
 import os
 import json
+import re
 import pandas as pd
 from datetime import datetime
 
@@ -108,7 +109,7 @@ def parse_wordle_data(player, tweets_df):
       #get the tweet text from the data frame
       tweet = df_row.text
       #handle the Wordle score search in the tweets
-      if(tweet.find('Wordle') != -1):
+      if(re.search("Wordle [0-9][0-9]", tweet)):
         #Wordle score count from the tweets
         wordle_scores_cnt = wordle_scores_cnt + 1
         #Extract Wordle Data from the Tweet text
